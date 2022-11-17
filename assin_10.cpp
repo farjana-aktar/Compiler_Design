@@ -1,64 +1,86 @@
-#include<bits/stdc++.h>
-#include<string.h>
+#include <bits/stdc++.h>
+
 using namespace std;
 
-char ip[20],stk[20],ts[20];
-int len,i=0,j=0,np,ck;
+void parse(string str);
 
-struct grammer
+map<string, string> prods;
+
+int main()
 {
-    char p[10];
-    char prod[10];
-}g[10];
+    string str = "((x+x)/(x-x))";
 
-void check(){
-    string temp = stk;
-    int flag = 0;
-        for(int m=0;m<np;m++){
-           ck = temp.find(g[m].prod);
-        //    cout<<stk<<" "<<g[m].prod<<" "<<ck<<endl;
-            if(ck>=0){
-                printf("\tReduced by %s->%s",g[m].p,g[m].prod);
+    prods["E+E"] = "E";
+    prods["E-E"] = "E";
+    prods["E*E"] = "E";
+    prods["E/E"] = "E";
+    prods["(E)"] = "E";
+    prods["x"] = "E";
+    cout << str << endl;
+    parse(str);
 
-                stk[ck] = g[m].p[0];
-                stk[ck+1] = '\0';
-                i=i-(strlen(g[m].prod)-1);
-                printf("\n$%s\t%s",stk,ip);
-                break;
-            }
-        }
+    return 0;
 }
 
+void parse(string str)
+{
+    cout << "STACK\t\tINPUT\t\tACTION" << endl;
+    cout << "************************************" << endl;
+    str = str + "$";
 
-int main(){
-    printf("Enter the number of productions: ");
-    cin>>np;
-    printf("\nEnter the productions: ");
-    for(int i=0;i<np;i++){
-        cin>>ts;
-        strncpy(g[i].p,ts,1);
-        strcpy(g[i].prod,&ts[3]);
+    string stk = "$";
+
+    int i = 0;
+    while (true)
+    {
+        // Print Stack Current Value
+        cout << stk << "\t\t";
+
+        for (int k = i; str[k] != '\0'; k++)
+            cout << str[k];
+        cout << "\t\t";
+
+        if (str[i] == '$' && stk == "$E")
+        {
+            cout << "ACCEPTED" << endl;
+            return;
+        }
+
+        else if (i > str.length())
+        {
+            cout << "FAILED" << endl;
+            return;
+        }
+
+        else
+        {
+            string tmp = "";
+            int j;
+            for (j = stk.length() - 1; j > 0; j--)
+            {
+                tmp = tmp + stk[j];
+                // cout << "\nTemp Str : " << tmp << endl;
+                string tmp2 = tmp;
+                reverse(tmp2.begin(), tmp2.end());
+
+                // cout << "\nTemp2 Str : " << tmp2 << endl;
+                if (prods[tmp2] != "")
+                {
+
+                    stk.erase(stk.length() - tmp2.length());
+                    stk = stk + prods[tmp2];
+                    tmp = "";
+                    cout << "REDUCE " << prods[tmp2] << " --> " << tmp2 << endl;
+                    break;
+                }
+            }
+
+            if (j == 0)
+            {
+                cout << "SHIFT " << str[i] << endl;
+                stk = stk + str[i];
+                i += 1;
+            }
+        }
     }
-    printf("\nEnter the input string: ");
-    cin>>ip;
-    len = strlen(ip);
-
-    printf("\n$\t%s",ip);
-
-    for(i=0,j=0;j<len;i++,j++){
-
-        printf("\tShifted");
-
-        stk[i]=ip[j];
-        stk[i+1]='\0';
-        ip[j]=' ';
-
-        printf("\n$%s\t%s",stk,ip);
-
-        check();
-    }
-
-    if(strcmp(stk,"E")== 0 && stk[1] == '\0')
-        printf("\n\nString is accepted");
-
 }
